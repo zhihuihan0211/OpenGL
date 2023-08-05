@@ -12,6 +12,9 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
 #define TEST_PROJECTION_MATRIX 1
 
 int main(void)
@@ -103,19 +106,17 @@ int main(void)
 #endif // TEST_PROJECTION_MATRIX
 
         glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100.0f, 0.0f, 0.0f));
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, 200.0f, 0.0f));
+        //glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, 200.0f, 0.0f));
 
-        glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
+        //glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
 
         Shader shader{ "res/Shaders/Basic.shader" };
-        shader.Bind();
-        shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0);
-        shader.SetUniformMat4f("u_MVP", mvp);
-        
 
         const unsigned int slot = 0;
         Texture texure("res/texture/ChernoLogo.png");
         texure.Bind(slot);
+
+        shader.Bind();
         shader.SetUniform1i("u_Texture", slot);
 
         /*清除绑定关系*/
@@ -124,9 +125,24 @@ int main(void)
         iB.UnBind();
         shader.UnBind();
  
+        //crate imgui
+        ImGui::CreateContext();
+        ImGui_ImplGlfwGL3_Init(window, true);
+        // Setup style
+        ImGui::StyleColorsDark();
+
+
         Renderer renderer;
         float Color_R = 0.8f;
         float Increase = 0.05f;
+
+        ///******************************************/
+        //bool show_demo_window = true;
+        //bool show_another_window = false;
+        //ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        ///*********************************************/
+
+        glm::vec3 translation(200.0f, 200.0f, 0.0f);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -134,8 +150,15 @@ int main(void)
             /* Render here */
             renderer.Clear();
 
+            ImGui_ImplGlfwGL3_NewFrame();
+
+            /*dynamic change mpv model !*/
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+            glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
+
             shader.Bind();
-            shader.SetUniform4f("u_Color", Color_R, 0.5, 0.5, 1.0);
+            shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0);
+            shader.SetUniformMat4f("u_MVP", mvp);
 
             renderer.Draw(va, iB, shader);
 
@@ -151,6 +174,15 @@ int main(void)
 
             Color_R += Increase;
 
+            {
+                // Display some text (you can use a format string too)
+                ImGui::SliderFloat3("translation", &translation.x, 0.0f, 960.0f); 
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            }
+
+            ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
 
@@ -158,7 +190,9 @@ int main(void)
             glfwPollEvents();
         }
     }
-
+    // Cleanup
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
 }
