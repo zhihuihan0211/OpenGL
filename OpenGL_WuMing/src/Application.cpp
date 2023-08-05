@@ -12,6 +12,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#define TEST_PROJECTION_MATRIX 1
+
 int main(void)
 {
     GLFWwindow* window;
@@ -29,7 +31,16 @@ int main(void)
 
 
     /* Create a windowed mode window and its OpenGL context */
+    //window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+
+    //test æÿ’ÛÕ∂”∞
+#if TEST_PROJECTION_MATRIX
+    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
+#else
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+#endif //TEST_PROJECTION_MATRIX
+
+
     if (!window)
     {
         glfwTerminate(); 
@@ -45,15 +56,23 @@ int main(void)
     if (glewInit() != GLEW_OK)
         std::cout << "Error" << std::endl;
 
-    std::cout << glGetString(GL_VERSION) << std::endl;
+    std::cout << glGetString(GL_VERSION) << std::endl; 
     {
-        float positions[] = {
+#if TEST_PROJECTION_MATRIX
+    float positions[] = {
+       100.0f,  100.0f, 0.0f, 0.0f,      // 0
+       200.0f,  100.0f, 1.0f, 0.0f,      // 1
+       200.0f,  200.0f, 1.0f, 1.0f,      // 2
+       100.0f,  200.0f, 0.0f, 1.0f      // 3
+    };
+#else
+    float positions[] = {
             -0.5,   -0.5f, 0.0f, 0.0f,      // 0
              0.5f,  -0.5f, 1.0f, 0.0f,      // 1
              0.5f,   0.5f, 1.0f, 1.0f,      // 2
             -0.5f,   0.5f, 0.0f, 1.0f      // 3
-        };
-
+     };
+#endif // TEST_PROJECTION_MATRIX
         unsigned int indices[] = {
             0, 1, 2,
             2, 3, 0
@@ -71,8 +90,14 @@ int main(void)
         layout.Push<float>(2);
         va.AddBuffer(vb, layout);
         IndexBuffer iB(indices, 6);
-
+#if TEST_PROJECTION_MATRIX
+        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+        //debug 
+        glm::vec4 vp(100.0f, 100.0f, 0.0f, 1.0f);
+        glm::vec4 Result = proj * vp;
+#else
         glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+#endif // TEST_PROJECTION_MATRIX
 
         Shader shader{ "res/Shaders/Basic.shader" };
         shader.Bind();
