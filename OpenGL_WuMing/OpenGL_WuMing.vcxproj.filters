@@ -1347,9 +1347,4 @@
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="C:\Users\Mr_han\Desktop\直播\333.png">
-      <Filter>资源文件</Filter>
-    </Image>
-  </ItemGroup>
 </Project>
