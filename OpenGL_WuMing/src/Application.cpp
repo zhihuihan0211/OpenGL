@@ -14,6 +14,8 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include "tests/TestClearColor.h"
+
 
 #define TEST_PROJECTION_MATRIX 1
 
@@ -61,143 +63,33 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl; 
     {
-#if TEST_PROJECTION_MATRIX
-    float positions[] = {
-       -50.0f,  -50.0f, 0.0f, 0.0f,      // 0
-       50.0f,  -50.0f, 1.0f, 0.0f,      // 1
-       50.0f,  50.0f, 1.0f, 1.0f,      // 2
-       -50.0f,  50.0f, 0.0f, 1.0f      // 3
-    };
-#else
-    float positions[] = {
-            -0.5,   -0.5f, 0.0f, 0.0f,      // 0
-             0.5f,  -0.5f, 1.0f, 0.0f,      // 1
-             0.5f,   0.5f, 1.0f, 1.0f,      // 2
-            -0.5f,   0.5f, 0.0f, 1.0f      // 3
-     };
-#endif // TEST_PROJECTION_MATRIX
-        unsigned int indices[] = {
-            0, 1, 2,
-            2, 3, 0
-        };
-
         // 启用渲染透明混合
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        VertexArray va;
-        VertexBuffer vb(positions, 4 * 4 * sizeof(float));
-
-        VertexBufferLayout layout;
-        layout.Push<float>(2);
-        layout.Push<float>(2);
-        va.AddBuffer(vb, layout);
-        IndexBuffer iB(indices, 6);
-#if TEST_PROJECTION_MATRIX
-        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-        //debug 
-        glm::vec4 vp(100.0f, 100.0f, 0.0f, 1.0f);
-        
-#if simulateCalcByCPU 0
-    glm::vec4 Result = proj * vp;
-#endif //simulateCalcByCPU
-#else
-        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
-#endif // TEST_PROJECTION_MATRIX
-
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        //glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, 200.0f, 0.0f));
-
-        //glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
-
-        Shader shader{ "res/Shaders/Basic.shader" };
-
-        const unsigned int slot = 0;
-        Texture texure("res/texture/ChernoLogo.png");
-        texure.Bind(slot);
-
-        shader.Bind();
-        shader.SetUniform1i("u_Texture", slot);
-
-        /*清除绑定关系*/
-        va.UnBind();
-        vb.UnBind();
-        iB.UnBind();
-        shader.UnBind();
+        Renderer renderer;
  
         //crate imgui
         ImGui::CreateContext();
         ImGui_ImplGlfwGL3_Init(window, true);
-        // Setup style
         ImGui::StyleColorsDark();
 
-
-        Renderer renderer;
-        float Color_R = 0.8f;
-        float Increase = 0.05f;
-
-        ///******************************************/
-        //bool show_demo_window = true;
-        //bool show_another_window = false;
-        //ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-        ///*********************************************/
-
-        glm::vec3 translationA(200.0f, 200.0f, 0.0f);
-        glm::vec3 translationB(400.0f, 200.0f, 0.0f);
+        test::TestClearColor test;
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
-            /* Render here */
             renderer.Clear();
 
+            test.OnUpdate(0.0f);
+            test.OnRender();
+
             ImGui_ImplGlfwGL3_NewFrame();
-            shader.Bind();
-
-            {
-                /*dynamic change mpv model !*/
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);
-                glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
-                shader.SetUniformMat4f("u_MVP", mvp);
-
-                renderer.Draw(va, iB, shader);
-            }
-
-            { 
-                /*dynamic change mpv model !*/
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);
-                glm::mat4 mvp = proj * view * model; // this is MVP model (model view projection)
-                shader.SetUniformMat4f("u_MVP", mvp);
-
-                renderer.Draw(va, iB, shader);
-            }
-
-            if (Color_R > 1.0f)
-            {
-                Increase = -0.05f;
-            }
-            else if (Color_R < 0.0f)
-            {
-                Increase = 0.05f;
-            }
-
-            Color_R += Increase;
-
-            {
-                // Display some text (you can use a format string too)
-                ImGui::SliderFloat3("translationA", &translationA.x, 0.0f, 960.0f); 
-                ImGui::SliderFloat3("translationB", &translationB.x, 0.0f, 960.0f);
-
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            }
-
+            test.OnImGuiRender();
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
-            /* Swap front and back buffers */
             glfwSwapBuffers(window);
-
-            /* Poll for and process events */
             glfwPollEvents();
         }
     }
