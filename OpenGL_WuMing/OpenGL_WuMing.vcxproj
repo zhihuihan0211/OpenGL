@@ -162,6 +162,7 @@
     <ClCompile Include="src\VertexArray.cpp" />
     <ClCompile Include="src\Texture\Texture.cpp" />
     <ClCompile Include="src\tests\TestClearColor.cpp" />
+    <ClCompile Include="src\tests\TestTexture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\Basic.shader" />
@@ -608,6 +609,7 @@
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\Texture\Texture.h" />
     <ClInclude Include="src\tests\TestClearColor.h" />
+    <ClInclude Include="src\tests\TestTexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dependence\GLEW\glew-2.1.0\bin\Release\Win32\glew32.dll" />
