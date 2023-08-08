@@ -18,8 +18,11 @@ private:
 	
 	unsigned int m_RendererID;
 
-	//cache for uniforms
-	std::unordered_map<std::string, int> m_LocationCache;
+	/*
+	* mutable unordered_map<std::string, int> m_LocationCache
+	* cache for uniforms
+	*/
+	mutable std::unordered_map<std::string, int> m_LocationCache;
 
 public:
 
@@ -40,7 +43,7 @@ public:
 
 private:
 
-	int GetUniformLocation(const std::string& Name);
+	int GetUniformLocation(const std::string& Name) const;
 
 	ShaderPorgramSource parseShader(const std::string& filePath);
 
